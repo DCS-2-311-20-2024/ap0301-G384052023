@@ -1,6 +1,6 @@
 //
 // 応用プログラミング 第3回 課題1 (ap0301)
-// G384002023 拓殖太郎
+// G384052023 コクセイ
 //
 "use strict"; // 厳格モード
 
@@ -25,11 +25,30 @@ function init() {
   scene.add(axes);
 
   // ロボットの作成
-  const robot = makeMetalRobot();
-  scene.add(robot);
+  // const robot = makeMetalRobot();
+  // scene.add(robot);
+  const robots = new THREE.Group;
+  for(let x = 0; x<10; x++){
+    for(let z = 0; z<10; z++){
+      let robot;
+      if(Math.random()<0.75){
+        robot =  makeMetalRobot();
+      }
+      else{
+        robot = makeCBRobot();
+      }
+      robot.position.x = x*6;
+      robot.position.z = z*6;
+      robot.rotation.y = Math.atan2(x,z);
+      robots.add(robot);
+    }
+  }
+  robots.position.x = -30;
+  robots.position.z = -30;
+  scene.add(robots);
 
   // 光源の設定
-  const light = new THREE.SpotLight();
+  const light = new THREE.SpotLight(0xffffff, 1800);
   light.position.set(0, 30, 30);
   scene.add(light);
   
@@ -52,15 +71,29 @@ function init() {
     camera.position.z = param.z;
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
+    //　ロボットの動き
+    // robots.rotation.y += 0.01;
+    // robots.rotation.y = (robots.rotation.y + 0.01)%(2*Math.PI);
+    robots.children.forEach(
+      (robot) =>{
+        robot.rotation.y = (robot.rotation.y + 0.01) % (2 * Math.PI);
+        robot.position.y = Math.sin(robot.rotation.y);
+      }
+    );
+
+
     renderer.render(scene, camera);
+    requestAnimationFrame(render);
+
   }
+
 
   // カメラのコントローラ
   const gui = new GUI();
-  gui.add(param, "fov", 10, 100).onChange(render);
-  gui.add(param, "x", -50, 50).onChange(render);
-  gui.add(param, "y", -50, 50).onChange(render);
-  gui.add(param, "z", -50, 50).onChange(render);
+  gui.add(param, "fov", 10, 100);
+  gui.add(param, "x", -50, 50);
+  gui.add(param, "y", -50, 50);
+  gui.add(param, "z", -50, 50);
   
   // 描画
   render();
